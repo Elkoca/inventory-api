@@ -21,7 +21,7 @@ public class ProductsController : ControllerBase
     [HttpGet(Name = nameof(GetProductListAsync))]
     [ProducesResponseType(typeof(GetProductListResponseDto), Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), Status400BadRequest)]
-    public async Task<IActionResult> GetProductListAsync([FromQuery] UrlQueryProductListDto urlQueryParameters, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetProductListAsync([FromQuery] UrlQueryGetProductListDto urlQueryParameters, CancellationToken cancellationToken)
     {
         //Tror ikke jeg trenger denne lenger
         if (!ModelState.IsValid)
@@ -37,7 +37,7 @@ public class ProductsController : ControllerBase
         return Ok(GeneratePageLinks(urlQueryParameters, products));
     }
 
-    private GetProductListResponseDto GeneratePageLinks(UrlQueryBaseDto queryParameters, GetProductListResponseDto response)
+    private GetProductListResponseDto GeneratePageLinks(UrlQueryPagingBaseDto queryParameters, GetProductListResponseDto response)
     {
         if (response.TotalPages > 1)
         {
