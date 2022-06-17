@@ -20,23 +20,79 @@ public class ProductsController : ControllerBase
 
     [HttpGet(Name = nameof(GetProductListAsync))]
     [ProducesResponseType(typeof(GetProductListResponseDto), Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), Status400BadRequest)]
     public async Task<IActionResult> GetProductListAsync([FromQuery] UrlQueryGetProductListDto urlQueryParameters, CancellationToken cancellationToken)
     {
-        //Tror ikke jeg trenger denne lenger
-        if (!ModelState.IsValid)
-        {
-            return BadRequest();
-        }
-
         var products = await _service.GetByPageAsync(
                                 urlQueryParameters.Limit,
                                 urlQueryParameters.Page,
                                 cancellationToken);
 
         return Ok(GeneratePageLinks(urlQueryParameters, products));
+
+    }
+    [HttpGet("{Id}", Name = nameof(GetProductAsync))]
+    [ProducesResponseType(typeof(GetProductResponseDto), Status200OK)]
+    [ProducesResponseType(Status404NotFound)]
+    public async Task<IActionResult> GetProductAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        var product = await _service.GetByIdAsync(id, cancellationToken);
+
+        if (product == null)
+            return NotFound($"product with id {id}, was not found");
+
+        return Ok(product);
     }
 
+    [HttpPost(Name = nameof(PostProductAsync))]
+    [ProducesResponseType(typeof(GetProductResponseDto), Status201Created)]
+    [ProducesResponseType(Status400BadRequest)]
+    public async Task<IActionResult> PostProductAsync([FromBody] PostProductBodyDto newProuduct, CancellationToken cancellationToken)
+    {
+        GetProductResponseDto cratedProduct = await _service.CreateAsync(newProuduct, cancellationToken);
+        
+        return CreatedAtAction("GetProduct", new { id = cratedProduct.Id }, cratedProduct);
+    }
+
+    [HttpPut("{id}", Name = nameof(PutProductAsync))]
+    [ProducesResponseType(typeof(GetProductResponseDto), Status201Created)]
+    [ProducesResponseType(Status204NoContent)]
+    [ProducesResponseType(Status400BadRequest)]
+    public async Task<IActionResult> PutProductAsync([FromRoute] Guid id, [FromBody] PutProductBodyDto product, CancellationToken cancellationToken)
+    {
+        if (id != product.Id)
+        {
+            return BadRequest("Route, and body id is not matching");
+        }
+
+        if (!await _service.ExistAsync(id, cancellationToken))
+        {
+            var newProduct = new PostProductBodyDto
+            {
+                Name = product.Name,
+                Description = product.Description,
+                Title = product.Title
+            };
+
+            GetProductResponseDto cratedProduct = await _service.CreateWithIdAsync(id, newProduct, cancellationToken);
+            return CreatedAtAction("GetProduct", new { id = cratedProduct.Id }, cratedProduct);
+        }
+
+        await _service.ReplaceAsync(product, cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{id}", Name = nameof(DeleteProductAsync))]
+    [ProducesResponseType(Status204NoContent)]
+    public async Task<IActionResult> DeleteProductAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+    {
+        //idempotent - 204 uansett om den eksisterer eller ikke 
+        if(await _service.ExistAsync(id, cancellationToken));
+            await _service.DeleteAsync(id, cancellationToken);
+
+        return NoContent();
+    }
+
+    //Flyttes senere
     private GetProductListResponseDto GeneratePageLinks(UrlQueryPagingBaseDto queryParameters, GetProductListResponseDto response)
     {
         if (response.TotalPages > 1)

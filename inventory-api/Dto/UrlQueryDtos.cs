@@ -3,7 +3,7 @@
 namespace inventory_api.Dto;
 
 public abstract record UrlQueryPagingBaseDto(int Limit = 50, int Page = 1);
-public record UrlQueryGetProductListDto(string? sortBy, string Name, string Id, string product) : UrlQueryPagingBaseDto;
+public record UrlQueryGetProductListDto(string? SortBy, string? Name, string? Id, string? Product) : UrlQueryPagingBaseDto;
 
 //Trenger nokk ikke disse. De kan like så greit bar bli implementert direkte i controlleren.
 //public record UrlQueryGetProductDto([FromRoute] Guid Id);
