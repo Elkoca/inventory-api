@@ -6,8 +6,7 @@ namespace inventory_api.Dto;
 public record GetProductListResponseDto : ILinkedResource
 {
     public int CurrentPage { get; init; } //Current Page
-    public int Page { get; init; } //Current Page
-    public int Size { get; init; } //Current Limit
+    public int PageSize { get; init; }  //Current Limit
     public int TotalItems { get; init; }
     public int TotalPages { get; init; }
 

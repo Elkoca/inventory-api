@@ -130,6 +130,7 @@ public class ProductService : IProductService
         return new GetProductListResponseDto
         {
             CurrentPage = pagedProducts.CurrentPage,
+            PageSize = pagedProducts.PageSize,
             TotalPages = pagedProducts.TotalPages,
             TotalItems = pagedProducts.TotalItems,
             Items = pagedProducts.Items.Select(p => new GetProductResponseDto
