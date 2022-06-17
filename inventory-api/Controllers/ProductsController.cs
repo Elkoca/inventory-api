@@ -1,123 +1,73 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using inventory_api.Dto;
+using inventory_api.Interfaces;
 using Microsoft.AspNetCore.Http;
+using static Microsoft.AspNetCore.Http.StatusCodes;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using inventory_api.Models;
+using inventory_api.Extensions;
 
-namespace inventory_api.Controllers
+namespace inventory_api.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class ProductsController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ProductsController : ControllerBase
+    private readonly IProductService _service;
+
+    public ProductsController(IProductService service)
     {
-        private readonly InventoryContext _context;
+        _service = service;
+    }
 
-        public ProductsController(InventoryContext context)
+    [HttpGet(Name = nameof(GetProductListAsync))]
+    [ProducesResponseType(typeof(GetProductListResponseDto), Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), Status400BadRequest)]
+    public async Task<IActionResult> GetProductListAsync([FromQuery] UrlQueryProductListDto urlQueryParameters, CancellationToken cancellationToken)
+    {
+        //Tror ikke jeg trenger denne lenger
+        if (!ModelState.IsValid)
         {
-            _context = context;
+            return BadRequest();
         }
 
-        // GET: api/Products
-        [HttpGet]
-        public async Task<ActionResult<IEnumerable<Product>>> GetProducts()
+        var products = await _service.GetByPageAsync(
+                                urlQueryParameters.Limit,
+                                urlQueryParameters.Page,
+                                cancellationToken);
+
+        return Ok(GeneratePageLinks(urlQueryParameters, products));
+    }
+
+    private GetProductListResponseDto GeneratePageLinks(UrlQueryBaseDto queryParameters, GetProductListResponseDto response)
+    {
+        if (response.TotalPages > 1)
         {
-          if (_context.Products.Count() == 0)
-          {
-              return NotFound();
-          }
-            return await _context.Products.ToListAsync();
+            //First
+            var firstRoute = Url.RouteUrl(nameof(GetProductListAsync), new { limit = queryParameters.Limit, page = 1 });
+            response.AddResourceLink(LinkedResourceType.First, firstRoute);
+
+            //Last
+            var lastRoute = Url.RouteUrl(nameof(GetProductListAsync), new { limit = queryParameters.Limit, page = response.TotalPages });
+            response.AddResourceLink(LinkedResourceType.Last, lastRoute);
         }
 
-        // GET: api/Products/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Product>> GetProduct(int id)
+        //Prev (If exist)
+        if (response.CurrentPage > 1)
         {
-          if (_context.Products == null)
-          {
-              return NotFound();
-          }
-            var product = await _context.Products.FindAsync(id);
+            var prevRoute = Url.RouteUrl(nameof(GetProductListAsync), new { limit = queryParameters.Limit, page = queryParameters.Page - 1 });
 
-            if (product == null)
-            {
-                return NotFound();
-            }
+            response.AddResourceLink(LinkedResourceType.Prev, prevRoute);
 
-            return product;
         }
 
-        // PUT: api/Products/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        //next (If exist (current page is not last))
+        if (response.CurrentPage < response.TotalPages)
         {
-            if (id != product.Id)
-            {
-                return BadRequest();
-            }
+            var nextRoute = Url.RouteUrl(nameof(GetProductListAsync), new { limit = queryParameters.Limit, page = queryParameters.Page + 1 });
 
-            _context.Entry(product).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            response.AddResourceLink(LinkedResourceType.Next, nextRoute);
         }
 
-        // POST: api/Products
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
-        {
-          if (_context.Products == null)
-          {
-              return Problem("Entity set 'InventoryContext.Products'  is null.");
-          }
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
-        }
-
-        // DELETE: api/Products/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(int id)
-        {
-            if (_context.Products == null)
-            {
-                return NotFound();
-            }
-            var product = await _context.Products.FindAsync(id);
-            if (product == null)
-            {
-                return NotFound();
-            }
-
-            _context.Products.Remove(product);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool ProductExists(int id)
-        {
-            return (_context.Products?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
+        return response;
     }
 }
