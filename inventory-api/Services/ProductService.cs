@@ -62,6 +62,8 @@ public class ProductService : IProductService
     {
         var products = await _dbContext.Products
             .Include(x => x.Price)
+            .Include(x => x.ProductType)
+            .Include(x => x.Vendor)
             .SingleOrDefaultAsync(x => x.ProductId == id);
 
         if (products == null)

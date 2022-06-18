@@ -29,6 +29,8 @@ builder.Services.AddDbContext<InventoryDbContext>(options => options.UseSqlServe
 
 //Services DI
 builder.Services.AddTransient<IProductService, ProductService>();
+builder.Services.AddTransient<IProductTypeService, ProductTypeService>();
+builder.Services.AddTransient<IVendorService, VendorService>();
 
 
 var app = builder.Build();

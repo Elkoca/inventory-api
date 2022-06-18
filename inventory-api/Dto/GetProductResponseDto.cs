@@ -12,8 +12,8 @@ public record GetProductResponseDto
     public int? ArticleNo { get; init; }
     //public Guid? PriceId { get; set; }
     public GetPriceResponseDto? Price { get; init; }
-    public Guid? ProductTypeId { get; init; }
-    //public GetProductTypeResponseDto? ProductType { get; set; }
-    public Guid? VendorId { get; init; }
-    //public GetVendorResponseDto? Vendor { get; set; }
+    //public Guid? ProductTypeId { get; init; }
+    public GetProductTypeResponseDto? ProductType { get; set; }
+    //public Guid? VendorId { get; init; }
+    public GetVendorResponseDto? Vendor { get; set; }
 }
