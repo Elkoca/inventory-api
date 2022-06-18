@@ -22,34 +22,37 @@ namespace inventory_api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
-            modelBuilder.Entity("inventory_api.Data.Entities.Currency", b =>
+            modelBuilder.Entity("inventory_api.Data.Entities.Price", b =>
                 {
-                    b.Property<Guid>("CurrencyId")
+                    b.Property<Guid>("PriceId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("Amount")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<double>("Amount")
+                        .HasColumnType("float");
 
                     b.Property<string>("Code")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
-                    b.Property<Guid?>("ProductId")
+                    b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.HasKey("CurrencyId");
+                    b.HasKey("PriceId");
 
                     b.HasIndex("ProductId")
-                        .IsUnique()
-                        .HasFilter("[ProductId] IS NOT NULL");
+                        .IsUnique();
 
-                    b.ToTable("Currency");
+                    b.ToTable("Prices");
                 });
 
             modelBuilder.Entity("inventory_api.Data.Entities.Product", b =>
@@ -66,9 +69,6 @@ namespace inventory_api.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("getdate()");
 
-                    b.Property<Guid?>("CurrencyId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
@@ -84,11 +84,10 @@ namespace inventory_api.Migrations
                     b.Property<Guid?>("ProductTypeId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int?>("Stock")
+                    b.Property<int>("Stock")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("VendorId")
@@ -110,20 +109,24 @@ namespace inventory_api.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ProductTypeId");
 
-                    b.ToTable("ProductType");
+                    b.ToTable("ProductTypes");
                 });
 
             modelBuilder.Entity("inventory_api.Data.Entities.Vendor", b =>
@@ -133,10 +136,14 @@ namespace inventory_api.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<DateTime>("LastUpdated")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnUpdate()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("getdate()");
 
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
@@ -146,14 +153,16 @@ namespace inventory_api.Migrations
 
                     b.HasKey("VendorId");
 
-                    b.ToTable("Vendor");
+                    b.ToTable("Vendors");
                 });
 
-            modelBuilder.Entity("inventory_api.Data.Entities.Currency", b =>
+            modelBuilder.Entity("inventory_api.Data.Entities.Price", b =>
                 {
                     b.HasOne("inventory_api.Data.Entities.Product", "Product")
-                        .WithOne("Currency")
-                        .HasForeignKey("inventory_api.Data.Entities.Currency", "ProductId");
+                        .WithOne("Price")
+                        .HasForeignKey("inventory_api.Data.Entities.Price", "ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Product");
                 });
@@ -175,7 +184,7 @@ namespace inventory_api.Migrations
 
             modelBuilder.Entity("inventory_api.Data.Entities.Product", b =>
                 {
-                    b.Navigation("Currency");
+                    b.Navigation("Price");
                 });
 
             modelBuilder.Entity("inventory_api.Data.Entities.ProductType", b =>

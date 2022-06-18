@@ -5,6 +5,7 @@ using static Microsoft.AspNetCore.Http.StatusCodes;
 using Microsoft.AspNetCore.Mvc;
 using inventory_api.Extensions;
 using System.Reflection;
+using AutoMapper;
 
 namespace inventory_api.Controllers;
 
@@ -13,10 +14,12 @@ namespace inventory_api.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IProductService _service;
+    public readonly IMapper _mapper;
 
-    public ProductsController(IProductService service)
+    public ProductsController(IProductService service, IMapper mapper)
     {
         _service = service;
+        _mapper = mapper;
     }
 
     [HttpGet(Name = nameof(GetProductListAsync))]
@@ -32,15 +35,15 @@ public class ProductsController : ControllerBase
         return Ok(GeneratePageLinks(urlQueryParameters, products));
 
     }
-    [HttpGet("{Id}", Name = nameof(GetProductAsync))]
+    [HttpGet("{ProductId}", Name = nameof(GetProductAsync))]
     [ProducesResponseType(typeof(GetProductResponseDto), Status200OK)]
     [ProducesResponseType(Status404NotFound)]
-    public async Task<IActionResult> GetProductAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> GetProductAsync([FromRoute] Guid ProductId, CancellationToken cancellationToken)
     {
-        var product = await _service.GetByIdAsync(id, cancellationToken);
+        var product = await _service.GetByIdAsync(ProductId, cancellationToken);
 
         if (product == null)
-            return NotFound($"product with id {id}, was not found");
+            return NotFound($"product with id {ProductId}, was not found");
 
         return Ok(product);
     }
@@ -52,44 +55,38 @@ public class ProductsController : ControllerBase
     {
         GetProductResponseDto cratedProduct = await _service.CreateAsync(newProuduct, cancellationToken);
         
-        return CreatedAtAction("GetProduct", new { id = cratedProduct.ProductId }, cratedProduct);
+        return CreatedAtAction("GetProduct", new { ProductId = cratedProduct.ProductId }, cratedProduct);
     }
 
-    [HttpPut("{id}", Name = nameof(PutProductAsync))]
+    [HttpPut("{ProductId}", Name = nameof(PutProductAsync))]
     [ProducesResponseType(typeof(GetProductResponseDto), Status201Created)]
     [ProducesResponseType(Status204NoContent)]
     [ProducesResponseType(Status400BadRequest)]
-    public async Task<IActionResult> PutProductAsync([FromRoute] Guid id, [FromBody] PutProductBodyDto product, CancellationToken cancellationToken)
+    public async Task<IActionResult> PutProductAsync([FromRoute] Guid ProductId, [FromBody] PutProductBodyDto product, CancellationToken cancellationToken)
     {
-        if (id != product.Id)
+        if (ProductId != product.ProductId)
         {
             return BadRequest("Route, and body id is not matching");
         }
 
-        if (!await _service.ExistAsync(id, cancellationToken))
+        if (!await _service.ExistAsync(ProductId, cancellationToken))
         {
-            var newProduct = new PostProductBodyDto
-            {
-                Name = product.Name,
-                Description = product.Description,
-                Title = product.Title
-            };
-
-            GetProductResponseDto cratedProduct = await _service.CreateWithIdAsync(id, newProduct, cancellationToken);
-            return CreatedAtAction("GetProduct", new { id = cratedProduct.ProductId }, cratedProduct);
+            var newProduct = _mapper.Map<PostProductBodyDto>(product);
+            GetProductResponseDto cratedProduct = await _service.CreateWithIdAsync(ProductId, newProduct, cancellationToken);
+            return CreatedAtAction("GetProduct", new { ProductId = cratedProduct.ProductId }, cratedProduct);
         }
 
         await _service.ReplaceAsync(product, cancellationToken);
         return NoContent();
     }
 
-    [HttpDelete("{id}", Name = nameof(DeleteProductAsync))]
+    [HttpDelete("{ProductId}", Name = nameof(DeleteProductAsync))]
     [ProducesResponseType(Status204NoContent)]
-    public async Task<IActionResult> DeleteProductAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+    public async Task<IActionResult> DeleteProductAsync([FromRoute] Guid ProductId, CancellationToken cancellationToken)
     {
         //idempotent - 204 uansett om den eksisterer eller ikke 
-        if(await _service.ExistAsync(id, cancellationToken));
-            await _service.DeleteAsync(id, cancellationToken);
+        if(await _service.ExistAsync(ProductId, cancellationToken));
+            await _service.DeleteAsync(ProductId, cancellationToken);
 
         return NoContent();
     }

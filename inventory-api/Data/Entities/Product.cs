@@ -12,11 +12,9 @@ public class Product : IEntity
     public string? Name { get; set; } // Navnet på produktet
     public string? Title { get; set; } // Tittel på produktet (Fra leverandør, eller noe jeg lager)
     public string? Description { get; set; } //Beskrivelse av produktet
-    public int? Stock { get; set; } //Antal varer
+    public int Stock { get; set; } //Antal varer
     public int? ArticleNo { get; set; } //Barcode
-
-    public Guid? CurrencyId { get; set; }
-    public Currency? Currency { get; set; }
+    public Price? Price { get; set; }
     public Guid? ProductTypeId { get; set; }
     public ProductType? ProductType { get; set; }
     public Guid? VendorId { get; set; }

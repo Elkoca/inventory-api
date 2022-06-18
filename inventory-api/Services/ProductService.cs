@@ -52,7 +52,7 @@ public class ProductService : IProductService
         PagedModel<Product> products = await _dbContext.Products
             .AsNoTracking()
             .OrderByString(sortProp, sortDesc)
-            .Include(x => x.ProductType)
+            .Include(x => x.Price)
             .PaginateAsync(page, limit, cancellationToken);
 
         return _mapper.Map<GetProductListResponseDto>(products);
@@ -61,7 +61,7 @@ public class ProductService : IProductService
     public async Task<GetProductResponseDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var products = await _dbContext.Products
-            .Include(x => x.ProductType)
+            .Include(x => x.Price)
             .SingleOrDefaultAsync(x => x.ProductId == id);
 
         if (products == null)
@@ -72,12 +72,8 @@ public class ProductService : IProductService
     public async Task<GetProductResponseDto> CreateAsync(PostProductBodyDto product, CancellationToken cancellationToken)
     {
         //Automapper
-        var newProduct = new Product
-        {
-            Name = product.Name,
-            Title = product.Title,
-            Description = product.Description
-        };
+        var newProduct = _mapper.Map<Product>(product);
+
         _dbContext.Products.Add(newProduct);
         await _dbContext.SaveChangesAsync();
 
@@ -87,13 +83,9 @@ public class ProductService : IProductService
 
     public async Task<GetProductResponseDto> CreateWithIdAsync(Guid id, PostProductBodyDto product, CancellationToken cancellationToken)
     {
-        var newProduct = new Product
-        {
-            ProductId = (Guid)id,
-            Name = product.Name,
-            Title = product.Title,
-            Description = product.Description
-        };
+        var newProduct = _mapper.Map<Product>(product);
+        newProduct.ProductId = id;
+
         _dbContext.Products.Add(newProduct);
         await _dbContext.SaveChangesAsync();
 
@@ -102,17 +94,19 @@ public class ProductService : IProductService
     }
     public async Task ReplaceAsync(PutProductBodyDto product, CancellationToken cancellationToken)
     {
+        //Må se mer på
         //Automapper
-        var replacedProduct = new Product
-        {
-            ProductId = product.Id,
-            Name = product.Name,
-            Title = product.Title,
-            Description = product.Description,
-        };
+
+        var replacedProduct = _mapper.Map<Product>(product);
+        var oldPrice = await _dbContext.Prices.SingleOrDefaultAsync(x => x.ProductId == replacedProduct.ProductId, cancellationToken: cancellationToken);
+
+        if(replacedProduct.Price != null && oldPrice != null)
+            replacedProduct.Price.ProductId = oldPrice.PriceId;
 
         _dbContext.Products.Attach(replacedProduct);
         _dbContext.Products.Update(replacedProduct);
+        //_dbContext.Entry(replacedProduct).Reference(x => x.Price.ProductId).IsModified = false;
+        //_dbContext.Entry(replacedProduct).Property(x => x.Price.ProductId).IsModified = false;
         await _dbContext.SaveChangesAsync();
     }
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)

@@ -8,12 +8,12 @@ public record GetProductResponseDto
     public string? Name { get; init; }
     public string? Title { get; init; }
     public string? Description { get; init; }
-    public int? Stock { get; set; }
-    public int? ArticleNo { get; set; }
-    //public Guid? CurrencyId { get; set; }
-    public GetCurrencyResponseDto? Currency { get; set; }
-    //public Guid? ProductTypeId { get; set; }
-    public GetProductTypeResponseDto? ProductType { get; set; }
-    //public Guid? VendorId { get; set; }
-    public GetVendorResponseDto? Vendor { get; set; }
+    public int Stock { get; init; }
+    public int? ArticleNo { get; init; }
+    //public Guid? PriceId { get; set; }
+    public GetPriceResponseDto? Price { get; init; }
+    public Guid? ProductTypeId { get; init; }
+    //public GetProductTypeResponseDto? ProductType { get; set; }
+    public Guid? VendorId { get; init; }
+    //public GetVendorResponseDto? Vendor { get; set; }
 }
