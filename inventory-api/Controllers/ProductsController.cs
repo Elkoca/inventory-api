@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using static Microsoft.AspNetCore.Http.StatusCodes;
 using Microsoft.AspNetCore.Mvc;
 using inventory_api.Extensions;
+using System.Reflection;
 
 namespace inventory_api.Controllers;
 
@@ -22,9 +23,10 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(GetProductListResponseDto), Status200OK)]
     public async Task<IActionResult> GetProductListAsync([FromQuery] UrlQueryGetProductListDto urlQueryParameters, CancellationToken cancellationToken)
     {
-        var products = await _service.GetByPageAsync(
+            var products = await _service.GetByPageAsync(
                                 urlQueryParameters.Limit,
                                 urlQueryParameters.Page,
+                                urlQueryParameters.SortBy,
                                 cancellationToken);
 
         return Ok(GeneratePageLinks(urlQueryParameters, products));

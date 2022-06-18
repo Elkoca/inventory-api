@@ -5,6 +5,7 @@ using inventory_api.Extensions;
 using inventory_api.Interfaces;
 using inventory_api.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace inventory_api.Services;
 
@@ -17,11 +18,37 @@ public class ProductService : IProductService
         _dbContext = context;
     }
 
-    public async Task<GetProductListResponseDto> GetByPageAsync(int limit, int page, CancellationToken cancellationToken)
+    public async Task<GetProductListResponseDto> GetByPageAsync(int limit, int page, string? sortBy, CancellationToken cancellationToken)
     {
+        string defaultSortName = "CreatedAt";
+        string sortName;
+        PropertyInfo sortProp;
+        bool sortDesc;
+
+
+        if (string.IsNullOrWhiteSpace(sortBy))
+        {
+            sortName = "CreatedAt";
+            sortDesc = false;
+        }
+        else
+        {
+            //splitting sortby (Propname.direction)
+            var sortByProps = sortBy.Trim().Split(".");
+            sortName = sortByProps.Count() > 0 && sortByProps.Count() < 3 ? sortByProps[0] : "CreatedAt";
+            sortDesc = sortByProps[1] == "desc" ? true : false;
+        }
+        //Her bør jeg egentlig først mappe sortName mot Dto, som igjen har en kobling mot DB Modellen
+
+        //Get Property, If not exist, Default prop, else throw
+        sortProp = typeof(Product).GetProperty(sortName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance) ??
+            typeof(Product).GetProperty(defaultSortName, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance) ?? 
+            throw new Exception("Default Prop not found");
+
+
         PagedModel<Product> products = await _dbContext.Products
             .AsNoTracking()
-            .OrderBy(p => p.CreatedAt)
+            .OrderByString(sortProp, sortDesc)
             .PaginateAsync(page, limit, cancellationToken);
 
         return GenerateProductListResponse(products);

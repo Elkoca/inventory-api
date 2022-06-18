@@ -4,7 +4,7 @@ namespace inventory_api.Interfaces;
 
 public interface IProductService
 {
-    Task<GetProductListResponseDto> GetByPageAsync(int limit, int page, CancellationToken cancellationToken);
+    Task<GetProductListResponseDto> GetByPageAsync(int limit, int page, string? sortBy, CancellationToken cancellationToken);
     Task<GetProductResponseDto?> GetByIdAsync(Guid guid, CancellationToken cancellationToken);
     Task<GetProductResponseDto> CreateAsync(PostProductBodyDto product, CancellationToken cancellationToken);
     Task<GetProductResponseDto> CreateWithIdAsync(Guid id, PostProductBodyDto product, CancellationToken cancellationToken);
