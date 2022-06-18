@@ -98,19 +98,21 @@ public class ProductsController : ControllerBase
         {
             //First
             var firstRoute = Url.RouteUrl(nameof(GetProductListAsync), new { limit = queryParameters.Limit, page = 1 });
-            response.AddResourceLink(LinkedResourceType.First, firstRoute);
+            if (firstRoute != null)
+                response.AddResourceLink(LinkedResourceType.First, firstRoute);
 
             //Last
             var lastRoute = Url.RouteUrl(nameof(GetProductListAsync), new { limit = queryParameters.Limit, page = response.TotalPages });
-            response.AddResourceLink(LinkedResourceType.Last, lastRoute);
+            if (lastRoute != null)
+                response.AddResourceLink(LinkedResourceType.Last, lastRoute);
         }
 
         //Prev (If exist)
         if (response.CurrentPage > 1)
         {
             var prevRoute = Url.RouteUrl(nameof(GetProductListAsync), new { limit = queryParameters.Limit, page = queryParameters.Page - 1 });
-
-            response.AddResourceLink(LinkedResourceType.Prev, prevRoute);
+            if (prevRoute != null)
+                response.AddResourceLink(LinkedResourceType.Prev, prevRoute);
 
         }
 
@@ -118,8 +120,8 @@ public class ProductsController : ControllerBase
         if (response.CurrentPage < response.TotalPages)
         {
             var nextRoute = Url.RouteUrl(nameof(GetProductListAsync), new { limit = queryParameters.Limit, page = queryParameters.Page + 1 });
-
-            response.AddResourceLink(LinkedResourceType.Next, nextRoute);
+            if (nextRoute != null)
+                response.AddResourceLink(LinkedResourceType.Next, nextRoute);
         }
 
 

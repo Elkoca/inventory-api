@@ -11,7 +11,11 @@ public abstract record UrlQueryPagingBaseDto()
     [Range(1, int.MaxValue)]
     public int Page { get; init; } = 1;
 };
-public record UrlQueryGetProductListDto(string? SortBy, string? Name, string? Id, string? Product) : UrlQueryPagingBaseDto;
+
+// Product blir her da her for:  title, name, og articleno
+public record UrlQueryGetProductListDto(string? SortBy, string? Name, string? ArticleNo, string? Product) : UrlQueryPagingBaseDto;
+public record UrlQueryGetProductTypeListDto(string? SortBy) : UrlQueryPagingBaseDto;
+public record UrlQueryGetVendorListDto(string? SortBy) : UrlQueryPagingBaseDto;
 
 //Trenger nokk ikke disse. De kan like så greit bar bli implementert direkte i controlleren.
 //public record UrlQueryGetProductDto([FromRoute] Guid ProductId);
