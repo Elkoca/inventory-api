@@ -20,7 +20,7 @@ public class ProductService : IProductService
 
     public async Task<GetProductListResponseDto> GetByPageAsync(int limit, int page, string? sortBy, CancellationToken cancellationToken)
     {
-        string defaultSortName = "CreatedAt";
+        string defaultSortName = "Created";
         string sortName;
         PropertyInfo sortProp;
         bool sortDesc;
@@ -28,14 +28,14 @@ public class ProductService : IProductService
 
         if (string.IsNullOrWhiteSpace(sortBy))
         {
-            sortName = "CreatedAt";
+            sortName = defaultSortName;
             sortDesc = false;
         }
         else
         {
             //splitting sortby (Propname.direction)
             var sortByProps = sortBy.Trim().Split(".");
-            sortName = sortByProps.Count() > 0 && sortByProps.Count() < 3 ? sortByProps[0] : "CreatedAt";
+            sortName = sortByProps.Count() > 0 && sortByProps.Count() < 3 ? sortByProps[0] : defaultSortName;
             sortDesc = sortByProps[1] == "desc" ? true : false;
         }
         //Her bør jeg egentlig først mappe sortName mot Dto, som igjen har en kobling mot DB Modellen

@@ -3,22 +3,13 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace inventory_api.Data.Entities;
 
-public class Product : DbBase
+public class Product : IEntity
 {
-    [Required]
-    public string Name { get; set; }
-    [Required]
+    public Guid Id { get; set; }
+    public DateTime Created { get; set; }
+    public DateTime LastUpdated { get; set; }
     public string Title { get; set; }
+    public string Name { get; set; }
     public string? Description { get; set; }
+
 }
-
-//public class Products
-//{
-//    public int CurrentPage { get; set; }
-
-//    public int TotalItems { get; set; }
-
-//    public int TotalPages { get; set; }
-
-//    public List<Product> Items { get; set; }
-//}
