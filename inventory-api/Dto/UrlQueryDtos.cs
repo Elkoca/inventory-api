@@ -14,9 +14,9 @@ public abstract record UrlQueryPagingBaseDto()
 public record UrlQueryGetProductListDto(string? SortBy, string? Name, string? Id, string? Product) : UrlQueryPagingBaseDto;
 
 //Trenger nokk ikke disse. De kan like så greit bar bli implementert direkte i controlleren.
-//public record UrlQueryGetProductDto([FromRoute] Guid Id);
+//public record UrlQueryGetProductDto([FromRoute] Guid ProductId);
 //public record UrlQueryPostProductDto([FromBody] GetProductResponseDto Product);
-//public record UrlQueryPutProductDto([FromRoute] Guid Id);
+//public record UrlQueryPutProductDto([FromRoute] Guid ProductId);
 
 
 //public record UrlQueryParameters(int Limit = 50, int Page = 1);

@@ -49,6 +49,7 @@ public class ProductService : IProductService
         PagedModel<Product> products = await _dbContext.Products
             .AsNoTracking()
             .OrderByString(sortProp, sortDesc)
+            //.Include(x => x.ProductType)
             .PaginateAsync(page, limit, cancellationToken);
 
         return GenerateProductListResponse(products);
@@ -64,10 +65,12 @@ public class ProductService : IProductService
 
         return new GetProductResponseDto()
         {
-            Id = products.Id,
+            ProductId = products.ProductId,
             Description = products.Description,
             Name = products.Name,
-            Title = products.Title
+            Title = products.Title,
+            Created = products.Created,
+            LastUpdated = products.LastUpdated
         };
     }
     public async Task<GetProductResponseDto> CreateAsync(PostProductBodyDto product, CancellationToken cancellationToken)
@@ -85,10 +88,12 @@ public class ProductService : IProductService
         //Automapper
         return new GetProductResponseDto()
         {
-            Id = newProduct.Id,
+            ProductId = newProduct.ProductId,
             Description = newProduct.Description,
             Name = newProduct.Name,
-            Title = newProduct.Title
+            Title = newProduct.Title,
+            Created = newProduct.Created,
+            LastUpdated = newProduct.LastUpdated
         };
     }
 
@@ -96,7 +101,7 @@ public class ProductService : IProductService
     {
         var newProduct = new Product
         {
-            Id = (Guid)id,
+            ProductId = (Guid)id,
             Name = product.Name,
             Title = product.Title,
             Description = product.Description
@@ -107,10 +112,12 @@ public class ProductService : IProductService
         //Automapper
         return new GetProductResponseDto()
         {
-            Id = newProduct.Id,
+            ProductId = newProduct.ProductId,
             Description = newProduct.Description,
             Name = newProduct.Name,
-            Title = newProduct.Title
+            Title = newProduct.Title,
+            Created = newProduct.Created,
+            LastUpdated = newProduct.LastUpdated
         };
     }
     public async Task ReplaceAsync(PutProductBodyDto product, CancellationToken cancellationToken)
@@ -118,7 +125,7 @@ public class ProductService : IProductService
         //Automapper
         var replacedProduct = new Product
         {
-            Id = product.Id,
+            ProductId = product.Id,
             Name = product.Name,
             Title = product.Title,
             Description = product.Description,
@@ -130,14 +137,14 @@ public class ProductService : IProductService
     }
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        var product = new Product { Id = id };
+        var product = new Product { ProductId = id };
         _dbContext.Products.Attach(product);
         _dbContext.Products.Remove(product);
         await _dbContext.SaveChangesAsync();
     }
     public async Task<bool> ExistAsync(Guid id, CancellationToken cancellationToken)
     {
-        return await _dbContext.Products.AnyAsync(e => e.Id == id);
+        return await _dbContext.Products.AnyAsync(e => e.ProductId == id);
     }
 
     //Eksempel på hvordan jeg ser for meg at sorting blir etterhvert
@@ -162,10 +169,21 @@ public class ProductService : IProductService
             TotalItems = pagedProducts.TotalItems,
             Items = pagedProducts.Items.Select(p => new GetProductResponseDto
             {
-                Id = p.Id,
+                ProductId = p.ProductId,
                 Name = p.Name,
                 Title = p.Title,
-                Description = p.Description
+                Description = p.Description,
+                ProductType = new GetProductTypeResponseDto()
+                {
+                    ProductTypeId = p.ProductId,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Created = p.Created,
+                    LastUpdated = p.LastUpdated,
+                },
+                Created = p.Created,
+                LastUpdated = p.LastUpdated,
+
             }).ToList()
         };
     }

@@ -52,7 +52,7 @@ public class ProductsController : ControllerBase
     {
         GetProductResponseDto cratedProduct = await _service.CreateAsync(newProuduct, cancellationToken);
         
-        return CreatedAtAction("GetProduct", new { id = cratedProduct.Id }, cratedProduct);
+        return CreatedAtAction("GetProduct", new { id = cratedProduct.ProductId }, cratedProduct);
     }
 
     [HttpPut("{id}", Name = nameof(PutProductAsync))]
@@ -76,7 +76,7 @@ public class ProductsController : ControllerBase
             };
 
             GetProductResponseDto cratedProduct = await _service.CreateWithIdAsync(id, newProduct, cancellationToken);
-            return CreatedAtAction("GetProduct", new { id = cratedProduct.Id }, cratedProduct);
+            return CreatedAtAction("GetProduct", new { id = cratedProduct.ProductId }, cratedProduct);
         }
 
         await _service.ReplaceAsync(product, cancellationToken);

@@ -7,13 +7,17 @@ namespace inventory_api.Data;
 public class InventoryDbContext : DbContext
 {
     public InventoryDbContext(DbContextOptions<InventoryDbContext> options) : base(options) { }
+
     public DbSet<Product> Products { get; set; }
+    public DbSet<Currency> Currency { get; set; }
+    public DbSet<ProductType> ProductType { get; set; }
+    public DbSet<Vendor> Vendor { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         //Products
         modelBuilder.Entity<Product>()
-            .HasKey(b => b.Id);
+            .HasKey(b => b.ProductId);
         modelBuilder.Entity<Product>()
             .Property(b => b.Created)
             .HasDefaultValueSql("getdate()")
@@ -36,6 +40,41 @@ public class InventoryDbContext : DbContext
         modelBuilder.Entity<Product>()
             .Property(b => b.Title)
             .IsRequired();
+
+        //Mapping
+
+        modelBuilder.Entity<Product>()
+            .HasOne(b => b.Currency)
+            .WithOne(p => p.Product)
+            .HasForeignKey<Currency>(p => p.ProductId);
+
+        modelBuilder.Entity<Product>()
+            .HasOne(b => b.ProductType)
+            .WithMany(b => b.Products)
+            .HasForeignKey(b => b.ProductTypeId);
+
+        modelBuilder.Entity<Product>()
+            .HasOne(b => b.Vendor)
+            .WithMany(b => b.Products)
+            .HasForeignKey(b => b.VendorId);
+
+
+
+
+        //Currency 
+        modelBuilder.Entity<Currency>()
+            .HasKey(b => b.CurrencyId);
+
+
+
+        //ProductType 
+        modelBuilder.Entity<ProductType>()
+            .HasKey(b => b.ProductTypeId);
+
+
+        //Vendor 
+        modelBuilder.Entity<Vendor>()
+            .HasKey(b => b.VendorId);
     }
     //public override int SaveChanges(bool acceptAllChangesOnSuccess)
     //{

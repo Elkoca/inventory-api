@@ -37,7 +37,7 @@
 
 //            PagedModel<Product> products = await _context.Products
 //                .AsNoTracking()
-//                .OrderBy(p => p.Id)
+//                .OrderBy(p => p.ProductId)
 //                .PaginateAsync(1, 25);
 
 //            Products output = new Products
@@ -75,7 +75,7 @@
 //        [HttpPut("{id}")]
 //        public async Task<IActionResult> PutProduct(int id, Product product)
 //        {
-//            if (id != product.Id)
+//            if (id != product.ProductId)
 //            {
 //                return BadRequest();
 //            }
@@ -113,7 +113,7 @@
 //            _context.Products.Add(product);
 //            await _context.SaveChangesAsync();
 
-//            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+//            return CreatedAtAction("GetProduct", new { id = product.ProductId }, product);
 
 //        }
 
@@ -139,7 +139,7 @@
 
 //        private bool ProductExists(int id)
 //        {
-//            return (_context.Products?.Any(e => e.Id == id)).GetValueOrDefault();
+//            return (_context.Products?.Any(e => e.ProductId == id)).GetValueOrDefault();
 //        }
 //    }
 //}
