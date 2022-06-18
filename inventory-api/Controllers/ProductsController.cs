@@ -51,11 +51,11 @@ public class ProductsController : ControllerBase
     [HttpPost(Name = nameof(PostProductAsync))]
     [ProducesResponseType(typeof(GetProductResponseDto), Status201Created)]
     [ProducesResponseType(Status400BadRequest)]
-    public async Task<IActionResult> PostProductAsync([FromBody] PostProductBodyDto newProuduct, CancellationToken cancellationToken)
+    public async Task<IActionResult> PostProductAsync([FromBody] PostProductBodyDto newProduct, CancellationToken cancellationToken)
     {
-        GetProductResponseDto cratedProduct = await _service.CreateAsync(newProuduct, cancellationToken);
+        GetProductResponseDto createdProduct = await _service.CreateAsync(newProduct, cancellationToken);
         
-        return CreatedAtAction("GetProduct", new { ProductId = cratedProduct.ProductId }, cratedProduct);
+        return CreatedAtAction("GetProduct", new { ProductId = createdProduct.ProductId }, createdProduct);
     }
 
     [HttpPut("{ProductId}", Name = nameof(PutProductAsync))]
@@ -72,8 +72,8 @@ public class ProductsController : ControllerBase
         if (!await _service.ExistAsync(ProductId, cancellationToken))
         {
             var newProduct = _mapper.Map<PostProductBodyDto>(product);
-            GetProductResponseDto cratedProduct = await _service.CreateWithIdAsync(ProductId, newProduct, cancellationToken);
-            return CreatedAtAction("GetProduct", new { ProductId = cratedProduct.ProductId }, cratedProduct);
+            GetProductResponseDto createdProduct = await _service.CreateWithIdAsync(ProductId, newProduct, cancellationToken);
+            return CreatedAtAction("GetProduct", new { ProductId = createdProduct.ProductId }, createdProduct);
         }
 
         await _service.ReplaceAsync(product, cancellationToken);
@@ -85,7 +85,7 @@ public class ProductsController : ControllerBase
     public async Task<IActionResult> DeleteProductAsync([FromRoute] Guid ProductId, CancellationToken cancellationToken)
     {
         //idempotent - 204 uansett om den eksisterer eller ikke 
-        if(await _service.ExistAsync(ProductId, cancellationToken));
+        if (await _service.ExistAsync(ProductId, cancellationToken))
             await _service.DeleteAsync(ProductId, cancellationToken);
 
         return NoContent();
