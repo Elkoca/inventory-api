@@ -1,4 +1,5 @@
-﻿using inventory_api.Data;
+﻿using AutoMapper;
+using inventory_api.Data;
 using inventory_api.Data.Entities;
 using inventory_api.Dto;
 using inventory_api.Extensions;
@@ -12,10 +13,12 @@ namespace inventory_api.Services;
 public class ProductService : IProductService
 {
     private readonly InventoryDbContext _dbContext;
+    public readonly IMapper _mapper;
 
-    public ProductService(InventoryDbContext context)
+    public ProductService(InventoryDbContext context, IMapper mapper)
     {
         _dbContext = context;
+        _mapper = mapper;
     }
 
     public async Task<GetProductListResponseDto> GetByPageAsync(int limit, int page, string? sortBy, CancellationToken cancellationToken)
@@ -49,29 +52,22 @@ public class ProductService : IProductService
         PagedModel<Product> products = await _dbContext.Products
             .AsNoTracking()
             .OrderByString(sortProp, sortDesc)
-            //.Include(x => x.ProductType)
+            .Include(x => x.ProductType)
             .PaginateAsync(page, limit, cancellationToken);
 
-        return GenerateProductListResponse(products);
+        return _mapper.Map<GetProductListResponseDto>(products);
     }
 
-    public async Task<GetProductResponseDto?> GetByIdAsync(Guid guid, CancellationToken cancellationToken)
+    public async Task<GetProductResponseDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         var products = await _dbContext.Products
-            .FindAsync(guid);
+            .Include(x => x.ProductType)
+            .SingleOrDefaultAsync(x => x.ProductId == id);
 
         if (products == null)
             return null;
 
-        return new GetProductResponseDto()
-        {
-            ProductId = products.ProductId,
-            Description = products.Description,
-            Name = products.Name,
-            Title = products.Title,
-            Created = products.Created,
-            LastUpdated = products.LastUpdated
-        };
+        return _mapper.Map<GetProductResponseDto>(products);
     }
     public async Task<GetProductResponseDto> CreateAsync(PostProductBodyDto product, CancellationToken cancellationToken)
     {
@@ -86,15 +82,7 @@ public class ProductService : IProductService
         await _dbContext.SaveChangesAsync();
 
         //Automapper
-        return new GetProductResponseDto()
-        {
-            ProductId = newProduct.ProductId,
-            Description = newProduct.Description,
-            Name = newProduct.Name,
-            Title = newProduct.Title,
-            Created = newProduct.Created,
-            LastUpdated = newProduct.LastUpdated
-        };
+        return _mapper.Map<GetProductResponseDto>(newProduct);
     }
 
     public async Task<GetProductResponseDto> CreateWithIdAsync(Guid id, PostProductBodyDto product, CancellationToken cancellationToken)
@@ -110,15 +98,7 @@ public class ProductService : IProductService
         await _dbContext.SaveChangesAsync();
 
         //Automapper
-        return new GetProductResponseDto()
-        {
-            ProductId = newProduct.ProductId,
-            Description = newProduct.Description,
-            Name = newProduct.Name,
-            Title = newProduct.Title,
-            Created = newProduct.Created,
-            LastUpdated = newProduct.LastUpdated
-        };
+        return _mapper.Map<GetProductResponseDto>(newProduct);
     }
     public async Task ReplaceAsync(PutProductBodyDto product, CancellationToken cancellationToken)
     {
@@ -145,46 +125,5 @@ public class ProductService : IProductService
     public async Task<bool> ExistAsync(Guid id, CancellationToken cancellationToken)
     {
         return await _dbContext.Products.AnyAsync(e => e.ProductId == id);
-    }
-
-    //Eksempel på hvordan jeg ser for meg at sorting blir etterhvert
-    //public async Task<GetProductListResponseDto> GetByPageAsync(int limit, int page, string sortOrder, CancellationToken cancellationToken)
-    //{
-    //    PagedModel<Product> products = await _dbContext.Products
-    //                   .AsNoTracking()
-    //                   .OrderBy(p => p.CreatedAt)
-    //                   .PaginateAsync(page, limit, cancellationToken);
-
-    //    return GenerateProductListResponse(products);
-    //}
-
-    //AUTOMAPPER!
-    public GetProductListResponseDto GenerateProductListResponse(PagedModel<Product> pagedProducts)
-    {
-        return new GetProductListResponseDto
-        {
-            CurrentPage = pagedProducts.CurrentPage,
-            PageSize = pagedProducts.PageSize,
-            TotalPages = pagedProducts.TotalPages,
-            TotalItems = pagedProducts.TotalItems,
-            Items = pagedProducts.Items.Select(p => new GetProductResponseDto
-            {
-                ProductId = p.ProductId,
-                Name = p.Name,
-                Title = p.Title,
-                Description = p.Description,
-                ProductType = new GetProductTypeResponseDto()
-                {
-                    ProductTypeId = p.ProductId,
-                    Name = p.Name,
-                    Description = p.Description,
-                    Created = p.Created,
-                    LastUpdated = p.LastUpdated,
-                },
-                Created = p.Created,
-                LastUpdated = p.LastUpdated,
-
-            }).ToList()
-        };
     }
 }

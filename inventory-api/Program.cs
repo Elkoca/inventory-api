@@ -19,6 +19,8 @@ builder.Services.AddControllers().AddNewtonsoftJson( o =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 //Connections String
 string connectionString = builder.Configuration.GetConnectionString("InventoryContext");
 
