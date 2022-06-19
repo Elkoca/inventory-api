@@ -22,7 +22,7 @@ public class ProductTypeService : IProductTypeService
     }
     public async Task<GetProductTypeListResponseDto> GetByPageAsync(int limit, int page, string? sortBy, CancellationToken cancellationToken)
     {
-        string defaultSortName = "Created";
+        string defaultSortName = "Name";
         string sortName;
         PropertyInfo sortProp;
         bool sortDesc;
