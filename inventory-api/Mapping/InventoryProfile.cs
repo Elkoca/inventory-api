@@ -31,9 +31,14 @@ public class InventoryProfile : Profile
         CreateMap<PutProductBodyDto, PostProductBodyDto>();
         CreateMap<PutPriceBodyDto, PostPriceBodyDto>();
 
+        CreateMap<PutVendorBodyDto, PostVendorBodyDto>();
+        CreateMap<PutProductTypeBodyDto, PostProductTypeBodyDto>();
+
         //Other
         CreateMap<PagedModel<Product>, GetProductListResponseDto>();
-        
+        CreateMap<PagedModel<ProductType>, GetProductTypeListResponseDto>();
+        CreateMap<PagedModel<Vendor>, GetVendorListResponseDto>();
+
 
         //Tror kanskje ikke jeg trenger denne:
         //.ForMember( 

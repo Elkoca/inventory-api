@@ -92,9 +92,11 @@ public class VendorService : IVendorService
     }
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        var vendor = new Vendor { VendorId = id };
-        _dbContext.Vendors.Attach(vendor);
-        _dbContext.Vendors.Remove(vendor);
+        _dbContext.Vendors.Remove(
+            await _dbContext.Vendors
+                .Include(x => x.Products)
+                .SingleAsync(x => x.VendorId == id)
+            );
         await _dbContext.SaveChangesAsync();
     }
     public async Task<bool> ExistAsync(Guid id, CancellationToken cancellationToken)

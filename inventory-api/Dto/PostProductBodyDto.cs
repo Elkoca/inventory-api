@@ -15,6 +15,6 @@ public record PostProductBodyDto
     public PostPriceBodyDto? Price { get; init; }
     public Guid? ProductTypeId { get; init; }
     //public PostProductTypeBodyDto? ProductType { get; init; }
-    public Guid? ProductVendorId { get; init; }
+    public Guid? VendorId { get; init; }
     //public PostVendorBodyDto? Vendor { get; init; }
 }

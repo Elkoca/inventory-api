@@ -133,9 +133,11 @@ public class ProductService : IProductService
     }
     public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        var product = new Product { ProductId = id };
-        _dbContext.Products.Attach(product);
-        _dbContext.Products.Remove(product);
+        _dbContext.Products.Remove(
+           await _dbContext.Products
+                .Include(x => x.Price)
+                .SingleAsync(x => x.ProductId == id)
+            );
         await _dbContext.SaveChangesAsync();
     }
     public async Task<bool> ExistAsync(Guid id, CancellationToken cancellationToken)
