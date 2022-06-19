@@ -13,7 +13,7 @@ public abstract record UrlQueryPagingBaseDto()
 };
 
 // Product blir her da her for:  title, name, og articleno
-public record UrlQueryGetProductListDto(string? SortBy, string? Name, string? ArticleNo, string? Product) : UrlQueryPagingBaseDto;
+public record UrlQueryGetProductListDto(string? SortBy, string? Search) : UrlQueryPagingBaseDto;
 public record UrlQueryGetProductTypeListDto(string? SortBy) : UrlQueryPagingBaseDto;
 public record UrlQueryGetVendorListDto(string? SortBy) : UrlQueryPagingBaseDto;
 

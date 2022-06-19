@@ -26,11 +26,13 @@ public class ProductsController : ControllerBase
     [ProducesResponseType(typeof(GetProductListResponseDto), Status200OK)]
     public async Task<IActionResult> GetProductListAsync([FromQuery] UrlQueryGetProductListDto urlQueryParameters, CancellationToken cancellationToken)
     {
-            var products = await _service.GetByPageAsync(
-                                urlQueryParameters.Limit,
-                                urlQueryParameters.Page,
-                                urlQueryParameters.SortBy,
-                                cancellationToken);
+
+        var products = await _service.GetByPageAsync(
+                            urlQueryParameters.Limit,
+                            urlQueryParameters.Page,
+                            urlQueryParameters.SortBy,
+                            urlQueryParameters.Search,
+                            cancellationToken);
 
         return Ok(GeneratePageLinks(urlQueryParameters, products));
 

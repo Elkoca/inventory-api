@@ -7,6 +7,7 @@ using inventory_api.Interfaces;
 using inventory_api.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection;
+using System.Linq.Expressions;
 
 namespace inventory_api.Services;
 
@@ -21,13 +22,13 @@ public class ProductService : IProductService
         _mapper = mapper;
     }
 
-    public async Task<GetProductListResponseDto> GetByPageAsync(int limit, int page, string? sortBy, CancellationToken cancellationToken)
+    public async Task<GetProductListResponseDto> GetByPageAsync(int limit, int page, string? sortBy, string? searchString, CancellationToken cancellationToken)
     {
         string defaultSortName = "Created";
         string sortName;
         PropertyInfo sortProp;
         bool sortDesc;
-
+        PagedModel<Product> products;
 
         if (string.IsNullOrWhiteSpace(sortBy))
         {
@@ -49,22 +50,41 @@ public class ProductService : IProductService
             throw new Exception("Default Prop not found");
 
 
-        PagedModel<Product> products = await _dbContext.Products
-            .AsNoTracking()
-            .OrderByString(sortProp, sortDesc)
-            .Include(x => x.Price)
-            .PaginateAsync(page, limit, cancellationToken);
+        if(searchString == null)
+        {
+            products = await _dbContext.Products
+                .AsNoTracking()
+                .OrderByString(sortProp, sortDesc)
+                .Include(x => x.Price)
+                .PaginateAsync(page, limit, cancellationToken);
+        }
+        else
+        {
+            searchString = searchString.Trim();
+            products = await _dbContext.Products
+                .AsNoTracking()
+                .OrderByString(sortProp, sortDesc)
+                .Include(x => x.Price)
+                //.Where(x => x.Name )
+                .Where(x => 
+                    (x.Name != null && x.Name.Contains(searchString)) || //
+                    //(x.Title != null && x.Title.Contains(searchString)) || //Name
+                    (x.ArticleNo != null && x.ArticleNo.ToString().Contains(searchString))) //Partial
+                .PaginateAsync(page, limit, cancellationToken);
+        }
 
+        
         return _mapper.Map<GetProductListResponseDto>(products);
     }
 
     public async Task<GetProductResponseDto?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var products = await _dbContext.Products
+        var productContext = _dbContext.Products
             .Include(x => x.Price)
             .Include(x => x.ProductType)
-            .Include(x => x.Vendor)
-            .SingleOrDefaultAsync(x => x.ProductId == id);
+            .Include(x => x.Vendor);
+
+        var products = await productContext.SingleOrDefaultAsync(x => x.ProductId == id);
 
         if (products == null)
             return null;
