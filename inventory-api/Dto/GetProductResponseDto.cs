@@ -4,7 +4,7 @@ public record GetProductResponseDto
 {
     public Guid ProductId { get; init; }
     public DateTime Created { get; init; }
-    public DateTime LastUpdated { get; init; }
+    //public DateTime LastUpdated { get; init; }
     public string? Name { get; init; }
     public string? Title { get; init; }
     public string? Description { get; init; }
