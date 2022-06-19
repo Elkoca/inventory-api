@@ -93,14 +93,21 @@ public class VendorsController : ControllerBase
     //Flyttes senere
     private GetVendorListResponseDto GeneratePageLinks(UrlQueryPagingBaseDto queryParameters, GetVendorListResponseDto response)
     {
+        var usedQueryParams = new UsedQueryParameters();
+        usedQueryParams.Limit = queryParameters.Limit;
+        usedQueryParams.SortBy = queryParameters.SortBy;
+
         if (response.TotalPages > 1)
         {
             //First
-            var firstRoute = Url.RouteUrl(nameof(GetVendorListAsync), new { limit = queryParameters.Limit, page = 1 });
-            if(firstRoute != null) 
+            usedQueryParams.Page = 1;
+            var firstRoute = Url.RouteUrl(nameof(GetVendorListAsync), usedQueryParams);
+            if (firstRoute != null)
                 response.AddResourceLink(LinkedResourceType.First, firstRoute);
+
             //Last
-            var lastRoute = Url.RouteUrl(nameof(GetVendorListAsync), new { limit = queryParameters.Limit, page = response.TotalPages });
+            usedQueryParams.Page = response.TotalPages;
+            var lastRoute = Url.RouteUrl(nameof(GetVendorListAsync), usedQueryParams);
             if (lastRoute != null)
                 response.AddResourceLink(LinkedResourceType.Last, lastRoute);
         }
@@ -108,14 +115,18 @@ public class VendorsController : ControllerBase
         //Prev (If exist)
         if (response.CurrentPage > 1)
         {
-            var prevRoute = Url.RouteUrl(nameof(GetVendorListAsync), new { limit = queryParameters.Limit, page = queryParameters.Page - 1 });
+            usedQueryParams.Page = queryParameters.Page - 1;
+            var prevRoute = Url.RouteUrl(nameof(GetVendorListAsync), usedQueryParams);
             if (prevRoute != null)
                 response.AddResourceLink(LinkedResourceType.Prev, prevRoute);
+
         }
+
         //next (If exist (current page is not last))
         if (response.CurrentPage < response.TotalPages)
         {
-            var nextRoute = Url.RouteUrl(nameof(GetVendorListAsync), new { limit = queryParameters.Limit, page = queryParameters.Page + 1 });
+            usedQueryParams.Page = queryParameters.Page + 1;
+            var nextRoute = Url.RouteUrl(nameof(GetVendorListAsync), usedQueryParams);
             if (nextRoute != null)
                 response.AddResourceLink(LinkedResourceType.Next, nextRoute);
         }
@@ -124,4 +135,10 @@ public class VendorsController : ControllerBase
         return response;
     }
 
+    private struct UsedQueryParameters
+    {
+        public int Limit { get; set; }
+        public int Page { get; set; }
+        public string? SortBy { get; set; }
+    }
 }

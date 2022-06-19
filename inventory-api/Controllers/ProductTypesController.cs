@@ -91,15 +91,21 @@ public class ProductTypesController : ControllerBase
 
     private GetProductTypeListResponseDto GeneratePageLinks(UrlQueryPagingBaseDto queryParameters, GetProductTypeListResponseDto response)
     {
+        var usedQueryParams = new UsedQueryParameters();
+        usedQueryParams.Limit = queryParameters.Limit;
+        usedQueryParams.SortBy = queryParameters.SortBy;
+
         if (response.TotalPages > 1)
         {
             //First
-            var firstRoute = Url.RouteUrl(nameof(GetProductTypeListAsync), new { limit = queryParameters.Limit, page = 1 });
+            usedQueryParams.Page = 1;
+            var firstRoute = Url.RouteUrl(nameof(GetProductTypeListAsync), usedQueryParams);
             if (firstRoute != null)
                 response.AddResourceLink(LinkedResourceType.First, firstRoute);
 
             //Last
-            var lastRoute = Url.RouteUrl(nameof(GetProductTypeListAsync), new { limit = queryParameters.Limit, page = response.TotalPages });
+            usedQueryParams.Page = response.TotalPages;
+            var lastRoute = Url.RouteUrl(nameof(GetProductTypeListAsync), usedQueryParams);
             if (lastRoute != null)
                 response.AddResourceLink(LinkedResourceType.Last, lastRoute);
         }
@@ -107,7 +113,8 @@ public class ProductTypesController : ControllerBase
         //Prev (If exist)
         if (response.CurrentPage > 1)
         {
-            var prevRoute = Url.RouteUrl(nameof(GetProductTypeListAsync), new { limit = queryParameters.Limit, page = queryParameters.Page - 1 });
+            usedQueryParams.Page = queryParameters.Page - 1;
+            var prevRoute = Url.RouteUrl(nameof(GetProductTypeListAsync), usedQueryParams);
             if (prevRoute != null)
                 response.AddResourceLink(LinkedResourceType.Prev, prevRoute);
 
@@ -116,12 +123,20 @@ public class ProductTypesController : ControllerBase
         //next (If exist (current page is not last))
         if (response.CurrentPage < response.TotalPages)
         {
-            var nextRoute = Url.RouteUrl(nameof(GetProductTypeListAsync), new { limit = queryParameters.Limit, page = queryParameters.Page + 1 });
+            usedQueryParams.Page = queryParameters.Page + 1;
+            var nextRoute = Url.RouteUrl(nameof(GetProductTypeListAsync), usedQueryParams);
             if (nextRoute != null)
                 response.AddResourceLink(LinkedResourceType.Next, nextRoute);
         }
 
 
         return response;
+    }
+
+    private struct UsedQueryParameters
+    {
+        public int Limit { get; set; }
+        public int Page { get; set; }
+        public string? SortBy { get; set; }
     }
 }
